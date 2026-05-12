@@ -404,7 +404,7 @@ export default function LoomisCanvas() {
                 fontWeight: 700,
               }}
             >
-              Strathmore-style sketch study
+              Strathmore-style sketch
             </div>
 
             <h1
@@ -415,7 +415,7 @@ export default function LoomisCanvas() {
                 fontWeight: 500,
               }}
             >
-              Loomination
+              Loominate
             </h1>
           </div>
 
@@ -696,22 +696,6 @@ export default function LoomisCanvas() {
                           {renderLabel("chin", anchors.chin)}
 
                           <circle
-                            cx={toScreen(anchors.leftTemple).x}
-                            cy={toScreen(anchors.leftTemple).y}
-                            r={5}
-                            fill="purple"
-                          />
-                          {renderLabel("L temple", anchors.leftTemple)}
-
-                          <circle
-                            cx={toScreen(anchors.rightTemple).x}
-                            cy={toScreen(anchors.rightTemple).y}
-                            r={5}
-                            fill="purple"
-                          />
-                          {renderLabel("R temple", anchors.rightTemple)}
-
-                          <circle
                             cx={toScreen(anchors.noseTip).x}
                             cy={toScreen(anchors.noseTip).y}
                             r={5}
@@ -741,14 +725,6 @@ export default function LoomisCanvas() {
                             strokeWidth={2}
                           />
 
-                          <line
-                            x1={toScreen(anchors.leftTemple).x}
-                            y1={toScreen(anchors.leftTemple).y}
-                            x2={toScreen(anchors.rightTemple).x}
-                            y2={toScreen(anchors.rightTemple).y}
-                            stroke="purple"
-                            strokeWidth={2}
-                          />
                         </g>
                       )}
 
