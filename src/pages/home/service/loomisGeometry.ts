@@ -1,4 +1,3 @@
-// src/service/loomisGeometry.ts
 
 import type {
   AnchorPoint,

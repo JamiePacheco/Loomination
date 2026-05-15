@@ -22,6 +22,8 @@ import {
   generateEdgeProfileContour,
 } from "../service/edgeContour";
 
+// define saved image type
+
 type SavedImage = {
   id: string;
   name: string;
@@ -30,6 +32,8 @@ type SavedImage = {
   anchors: LoomisAnchors | null;
   edgeContour: EdgeContourResult | null;
 };
+
+// define type for checkbox booleans
 
 type GuideToggles = {
   landmarks: boolean;
@@ -43,15 +47,20 @@ type GuideToggles = {
   debugLines: boolean;
 };
 
+ 
+// define abstracted point type
 type ScreenPoint = {
   x: number;
   y: number;
 };
 
+// define primary colors
 const PRIMARY = "#faebd7";
 const SECONDARY = "#482700";
 const PAPER = "#fff8ee";
 
+
+// define constant that stores checkbox state
 const defaultToggles: GuideToggles = {
   landmarks: false,
   anchors: true,
@@ -65,6 +74,8 @@ const defaultToggles: GuideToggles = {
 };
 
 export default function LoomisCanvas() {
+
+  // define component state
   const [images, setImages] = useState<SavedImage[]>([]);
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [dims, setDims] = useState({ width: 0, height: 0 });
@@ -73,45 +84,54 @@ export default function LoomisCanvas() {
   const [isDetectingEdge, setIsDetectingEdge] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  // define refs for image and file
   const imgRef = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // define the computed anchor, landmarks, and edge contour of the image
   const activeImage = images.find((img) => img.id === activeImageId) ?? null;
   const anchors = activeImage?.anchors ?? null;
   const landmarks = activeImage?.landmarks ?? [];
   const edgeContour = activeImage?.edgeContour ?? null;
 
+  // generate the sphere
   const sphere = useMemo(() => {
     return anchors ? generateLoomisSphere(anchors) : null;
   }, [anchors]);
 
+  // generate the slide plane
   const sidePlane = useMemo(() => {
     return anchors && sphere ? generateLoomisSidePlane(anchors, sphere) : null;
   }, [anchors, sphere]);
 
+  // generate the brow line
   const browLine = useMemo(() => {
     return anchors && sphere
       ? generateLoomisBrowLine(anchors, sphere, sidePlane)
       : null;
   }, [anchors, sphere, sidePlane]);
 
+  // generate the jaw contour
   const jawContour = useMemo(() => {
     return anchors && sphere
       ? generateJawContourFrame(anchors, sphere, sidePlane)
       : null;
   }, [anchors, sphere, sidePlane]);
 
+  // helper function to map anchor point to specifc image point
   const toScreen = (p: AnchorPoint): ScreenPoint => ({
     x: p.x * dims.width,
     y: p.y * dims.height,
   });
 
+  // update specifc in image memory
   const updateImageById = (id: string, patch: Partial<SavedImage>) => {
     setImages((prev) =>
       prev.map((img) => (img.id === id ? { ...img, ...patch } : img))
     );
   };
 
+  // toggle specifc guideline on or off
   const toggleGuide = (key: keyof GuideToggles) => {
     setToggles((prev) => ({
       ...prev,
@@ -119,6 +139,7 @@ export default function LoomisCanvas() {
     }));
   };
 
+  // helper function to adding new image file to memory
   const addFiles = (files: File[]) => {
     const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
@@ -138,17 +159,20 @@ export default function LoomisCanvas() {
     setDims({ width: 0, height: 0 });
   };
 
+  // handle file upload
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     addFiles(Array.from(e.target.files ?? []));
     e.target.value = "";
   };
 
+  // allow for files drag and drop
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     addFiles(Array.from(e.dataTransfer.files ?? []));
   };
 
+  // function for manual edge detection (useful for rerunning if needed)
   const detectEdgeForImage = async (
     imageElement: HTMLImageElement,
     imageId: string,
@@ -176,26 +200,28 @@ export default function LoomisCanvas() {
     }
   };
 
+  // function for hwen chaging image from saved images
   const handleImageLoad = async () => {
     if (!imgRef.current || !activeImage) return;
 
     const img = imgRef.current;
     const rect = img.getBoundingClientRect();
 
+    // set image dimensions
     setDims({
       width: rect.width,
       height: rect.height,
     });
 
-    /**
-     * If already analyzed, do not rerun.
-     */
+    
+    //If already analyzed, do not rerun
     if (activeImage.anchors && activeImage.landmarks.length > 0) {
       return;
     }
 
     setIsAnalyzing(true);
 
+    // get specifc landmarks if not generated
     try {
       const result = await getLandmarksFromImage(img);
 
@@ -233,6 +259,7 @@ export default function LoomisCanvas() {
     }
   };
 
+  // used to remove image from memeory
   const clearCurrentImage = () => {
     if (!activeImageId) return;
 
@@ -246,6 +273,8 @@ export default function LoomisCanvas() {
     setDims({ width: 0, height: 0 });
   };
 
+
+  // use to remove all images from memories
   const clearAllImages = () => {
     images.forEach((img) => URL.revokeObjectURL(img.url));
     setImages([]);
@@ -253,6 +282,9 @@ export default function LoomisCanvas() {
     setDims({ width: 0, height: 0 });
   };
 
+
+  // generate a string indicating the coordinate path for some points
+  // used in svg generation
   function pointsToPath(points: AnchorPoint[]): string {
     const screenPoints = points.map(toScreen);
 
@@ -261,6 +293,7 @@ export default function LoomisCanvas() {
       .join(" ");
   }
 
+  // generate label render
   function renderLabel(text: string, point: AnchorPoint, dx = 6, dy = -6) {
     if (!toggles.labels) return null;
 
@@ -281,6 +314,7 @@ export default function LoomisCanvas() {
     );
   }
 
+  // helps smooth edges 
   function bowPointsOutward(
     points: ScreenPoint[],
     cheek: ScreenPoint,
@@ -301,6 +335,7 @@ export default function LoomisCanvas() {
     });
   }
 
+  // generate the list of points used to contour smooth path
   function pointsToSmoothPath(points: ScreenPoint[]): string {
     if (points.length === 0) return "";
     if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
@@ -327,6 +362,7 @@ export default function LoomisCanvas() {
     return d;
   }
 
+  // get the specifc contour path
   function getEdgeContourPathD(): string {
     if (!edgeContour || !edgeContour.visible || !anchors) return "";
 
@@ -343,6 +379,7 @@ export default function LoomisCanvas() {
     return pointsToSmoothPath(bowedPoints);
   }
 
+  // define button styles
   const buttonStyle: React.CSSProperties = {
     background: PRIMARY,
     color: SECONDARY,
@@ -355,6 +392,7 @@ export default function LoomisCanvas() {
     boxShadow: "2px 2px 0 rgba(72, 39, 0, 0.25)",
   };
 
+  // define disabled button styles
   const disabledButtonStyle: React.CSSProperties = {
     ...buttonStyle,
     opacity: 0.45,
@@ -366,7 +404,6 @@ export default function LoomisCanvas() {
       style={{
         minHeight: "100vh",
         width: "90%",
-        background: PRIMARY,
         color: SECONDARY,
         fontFamily: "Georgia, 'Times New Roman', serif",
         padding: "28px",

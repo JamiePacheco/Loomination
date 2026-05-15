@@ -1,4 +1,3 @@
-// src/service/landmarks.ts
 
 import {
   FaceLandmarker,

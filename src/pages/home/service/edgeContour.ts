@@ -1,4 +1,3 @@
-// src/service/edgeContour.ts
 
 import type { AnchorPoint, LoomisAnchors } from "./landmarks";
 
@@ -132,10 +131,6 @@ export async function generateEdgeProfileContour(
     };
   }
 
-  /**
-   * Downscale for speed.
-   * Increase to 500 if you need more detail.
-   */
   const MAX_SIZE = 420;
 
   const scale = Math.min(
